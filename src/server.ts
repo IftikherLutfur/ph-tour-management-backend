@@ -15,10 +15,7 @@ const startServer = async () => {
     try {
         await mongoose.connect(envVars.DB_URL)
         console.log("MongoDB Connect")
-        // eslint-disable-next-line no-console
-
-
-
+        
         server = app.listen(envVars.PORT, () => {
             console.log(`App listening on ${envVars.PORT} `)
         })
