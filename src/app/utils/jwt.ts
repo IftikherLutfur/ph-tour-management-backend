@@ -1,6 +1,6 @@
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken"
 
-interface MyJwtPayload extends JwtPayload {
+ export interface MyJwtPayload extends JwtPayload {
   userId: string;
   role: string;
   email?: string;

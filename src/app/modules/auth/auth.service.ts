@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import AppError from "../../errorHelpers/AppError";
 import { IUser } from "../user/user.interface"
 import { User } from "../user/user.model";
 import httpStatus from "http-status-codes"
 import bcryptjs from "bcryptjs"
-import { generateToken } from "../../utils/jwt";
+import { generateToken, MyJwtPayload } from "../../utils/jwt";
 import { envVars } from "../../config/env";
 
 const credentialsLogin = async(payload: Partial<IUser>)=>{
@@ -21,17 +22,22 @@ const credentialsLogin = async(payload: Partial<IUser>)=>{
    }
 
 
-   const jwtPayload = {
-    userId: isUserExist._id,
+   const jwtPayload: MyJwtPayload = {
+    userId: isUserExist._id.toString(),
     email: isUserExist.email,
-    role: isUserExist.role
+    role: isUserExist.role as string
    }
 
-   const accessToken = generateToken(jwtPayload, envVars.JWT_ACCESS_SECRET,envVars.JWT_TOKEN_EXPIRES as "1h")
+   const accessToken = generateToken(jwtPayload, envVars.JWT_ACCESS_SECRET,envVars.JWT_TOKEN_EXPIRES)
+
+   const refreshToken = generateToken(jwtPayload, envVars.JWT_REFRESH_SECRET, envVars.JWT_REFRESH_EXPIRES as string)
  
+   const {password: pass, ...rest} = isUserExist
 return {
     // email: isUserExist.email
-    accessToken
+    accessToken,
+    refreshToken,
+    user: rest
 }
 
 } 
