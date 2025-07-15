@@ -5,6 +5,7 @@ import { Server } from "http"
 import mongoose from "mongoose";
 import app from "./app";
 import { envVars } from "./app/config/env";
+import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
 
 // const app = express()
 let server: Server;
@@ -24,7 +25,10 @@ const startServer = async () => {
     }
 }
 
+(async ()=>{
 startServer()
+seedSuperAdmin()
+})()
 
 // process.on("SIGINT", ()=>{
 //     console.log("SIGINT signal Exceptation detected, Server shutting down.");

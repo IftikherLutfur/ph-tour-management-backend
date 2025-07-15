@@ -3,9 +3,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status-codes"
-import { userServices } from "./user.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
+import { userServices } from "./user.service";
+
 
 
 // const createUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -36,8 +37,6 @@ const createUser = catchAsync (async(req:Request, res:Response, next:NextFunctio
         })
     
 })
-
-
 const getAllUsers = catchAsync(async(req: Request, res:Response, next: NextFunction) =>{
     
         const result = await userServices.getUser()
@@ -57,7 +56,26 @@ const getAllUsers = catchAsync(async(req: Request, res:Response, next: NextFunct
     
 })
 
+const updateUser = catchAsync (async(req:Request, res:Response, next:NextFunction)=>{
+    const userId = req.params.id;
+    // const token = req.headers.authorization;
+    // const verfiedToken = verifyToken(token as string, envVars.JWT_ACCESS_SECRET) as JwtPayload
+    const verfiedToken = req.user;
+    const payload = req.body;
+    const user = await userServices.updateUser(userId,payload,verfiedToken)
+
+     sendResponse(res,{
+            success: true,
+            statusCode:httpStatus.CREATED,
+            message: "User Updated successfully",
+            data: user
+
+        })
+    
+})
+
 export const UserContrllers = {
     createUser,
-    getAllUsers
+    getAllUsers,
+    updateUser
 }
