@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import AppError from "../../errorHelpers/AppError";
-import { IUser } from "../user/user.interface"
+import { IsActive, IUser } from "../user/user.interface"
 import { User } from "../user/user.model";
 import httpStatus from "http-status-codes"
 import bcryptjs from "bcryptjs"
-import { generateToken, MyJwtPayload } from "../../utils/jwt";
+import { generateToken, MyJwtPayload, verifyToken } from "../../utils/jwt";
 import { envVars } from "../../config/env";
+import { createNewAccessTokenWithRefresh, createUserToken } from "../../utils/userTokens";
+import { JwtPayload } from "jsonwebtoken";
 
 const credentialsLogin = async(payload: Partial<IUser>)=>{
    const {email, password } = payload;
@@ -20,28 +22,33 @@ const credentialsLogin = async(payload: Partial<IUser>)=>{
    if(!isMatch){
     throw new AppError(httpStatus.BAD_REQUEST, "Incorrect Password")
    }
+   const userToken = createUserToken(isUserExist)
 
+   const {password: pass, ...rest} = isUserExist.toObject();
 
-   const jwtPayload: MyJwtPayload = {
-    userId: isUserExist._id.toString(),
-    email: isUserExist.email,
-    role: isUserExist.role as string
-   }
+   return {
+    // email: isUserExist.email
+    accessToken: userToken.accessToken,
+    refreshToken: userToken.refreshToken,
+    user: rest
+}} 
 
-   const accessToken = generateToken(jwtPayload, envVars.JWT_ACCESS_SECRET,envVars.JWT_TOKEN_EXPIRES)
+const getNewToken = async(refreshToken: string)=>{
 
-   const refreshToken = generateToken(jwtPayload, envVars.JWT_REFRESH_SECRET, envVars.JWT_REFRESH_EXPIRES as string)
- 
-   const {password: pass, ...rest} = isUserExist
+   const newAccessToken = await createNewAccessTokenWithRefresh(refreshToken)
+
 return {
     // email: isUserExist.email
-    accessToken,
-    refreshToken,
-    user: rest
+    accessToken: newAccessToken
 }
 
 } 
 
+
+
+
+
 export const AuthServices = {
-    credentialsLogin
+    credentialsLogin,
+    getNewToken
 }
