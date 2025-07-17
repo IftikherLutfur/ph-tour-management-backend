@@ -18,7 +18,7 @@ const userSchema = new Schema<IUser>({
         default: Role.USER
     },
     password:{ type: String,
-  required: true,
+  required: false,
   select: false, },
     phone: { type: String },
     picture: { type: String },
