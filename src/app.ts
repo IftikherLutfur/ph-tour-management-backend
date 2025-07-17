@@ -3,9 +3,11 @@ import { router } from "./app/routes";
 import { globalErrorHandler } from "./app/middlewares/globalErrorHandler";
 import notFound from "./app/middlewares/NotFound";
 import cookieParser from "cookie-parser";
+import passport from "passport";
 
 const app = express();
 
+app.use(passport.initialize())
 app.use(cookieParser())
 app.use(express.json())
 app.use("/api/v1", router)

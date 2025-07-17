@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status-codes"
@@ -45,13 +46,54 @@ const getNewAccessToken = catchAsync(async (req: Request, res: Response) => {
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: "UserLoged Successfully",
+        message: "New access token retrieved Successfully",
         data: tokeInfo
+    })
+})
+
+const logout = catchAsync (async(req: Request, res: Response, next: NextFunction)=>{
+
+    res.clearCookie("accessToken", {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax"
+    })
+
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax"
+    })
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "The user has loged out successfully",
+        data: null
+    })
+})
+
+
+const resetPassword = catchAsync(async(req:Request, res: Response, next:NextFunction)=>{
+    
+    const oldPassword = req.body.oldPassword;
+    const newPassword = req.body.password;
+    const decodedToken = req.user; 
+
+     await AuthServices.resetPassword(oldPassword, newPassword, decodedToken)
+    
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Password changed Successfully",
+        data: null
     })
 })
 
 
 export const authControllers = {
     credentialsLogin,
-    getNewAccessToken
+    getNewAccessToken,
+    logout,
+    resetPassword
 }
