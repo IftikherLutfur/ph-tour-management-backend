@@ -17,10 +17,7 @@ const createUser = async (payload: Partial<IUser>) => {
     }
 
     const hashedPassword = await bcrypt.hash(password as string, Number(envVars.BCRYPT_SALT_ROUND))
-
-
     const authProvider: IAuthProvider = { provider: "credentials", providerId: email as string }
-
     const user = await User.create({
         email,
         password: hashedPassword,
