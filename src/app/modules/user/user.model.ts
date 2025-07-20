@@ -11,12 +11,13 @@ const authProviderSchema = new Schema<IAuthProvider>({
 
 const userSchema = new Schema<IUser>({
     name: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true , unique: true},
     role: {
         type: String,
         enum: Object.values(Role),
         default: Role.USER
     },
+    age: {type: Number, required: false},
     password:{ type: String,
   required: false,
   select: false, },

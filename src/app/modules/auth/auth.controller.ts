@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from "express";
@@ -10,11 +11,43 @@ import { setAuthCookie } from "../../utils/setAuthCookie";
 import { createUserToken } from "../../utils/userTokens";
 import { envVars } from "../../config/env";
 import { JwtPayload } from "jsonwebtoken";
+import passport from "passport";
 
-const credentialsLogin = catchAsync(async (req: Request, res: Response) => {
+const credentialsLogin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     // const user = await userServices()
 
-    const logInfo = await AuthServices.credentialsLogin(req.body);
+    // const logInfo = await AuthServices.credentialsLogin(req.body);
+
+    passport.authenticate("local", async (err: any, user: any, info: any) => {
+        console.log(user, "Controller")
+        if (err) {
+            //  return new AppError(httpStatus.NOT_FOUND, "Something went wrong")
+            return next(err)
+        }
+
+         if(!user){
+            // return new AppError(httpStatus.NOT_FOUND, info.mesaage)
+            return next(new AppError(401, info.message))
+        }
+
+        const userTokens = await createUserToken(user)
+
+        // delete user.toObject().password;
+
+        const { password: pas, ...rest } = user.toObject()
+
+        setAuthCookie(res, userTokens)// setAuthCookie te res r login info pathiye diyechi
+        sendResponse(res, {
+            success: true,
+            statusCode: httpStatus.OK,
+            message: "UserLoged Successfully",
+            data: {
+                accessToken: userTokens.accessToken,
+                refreshToken: userTokens.refreshToken,
+                user: rest
+            }
+        })
+    })(req, res, next)
 
     // res.cookie("accessToken", logInfo.accessToken,{
     //     httpOnly: true,
@@ -27,15 +60,7 @@ const credentialsLogin = catchAsync(async (req: Request, res: Response) => {
     // })
 
     // cookie setup er kaj setAuthCookie korbe, 
-    setAuthCookie(res, logInfo)// setAuthCookie te res r login info pathiye diyechi
 
-
-    sendResponse(res, {
-        success: true,
-        statusCode: httpStatus.OK,
-        message: "UserLoged Successfully",
-        data: logInfo
-    })
 })
 
 const getNewAccessToken = catchAsync(async (req: Request, res: Response) => {
@@ -95,14 +120,14 @@ const resetPassword = catchAsync(async (req: Request, res: Response, next: NextF
 })
 const googleCallbackConteoller = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-    let redirectTo = req.query.state ? req.query.state as string : "" ;
-    if(redirectTo.startsWith("/")){
+    let redirectTo = req.query.state ? req.query.state as string : "";
+    if (redirectTo.startsWith("/")) {
         redirectTo = redirectTo.slice(1)
     }
     const user = req.user
-    
+
     console.log("user", user)
-    
+
     if (!user) {
         throw new AppError(httpStatus.NOT_FOUND, "User not found")
     }
