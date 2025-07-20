@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-catch */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import AppError from "../../errorHelpers/AppError";
 import { IAuthProvider, IUser, Role } from "./user.interface";
@@ -15,6 +16,7 @@ const createUser = async (payload: Partial<IUser>) => {
     if (userExist) {
         throw new AppError(httpStatus.BAD_REQUEST, "User Already exist")
     }
+    
 
     const hashedPassword = await bcrypt.hash(password as string, Number(envVars.BCRYPT_SALT_ROUND))
     const authProvider: IAuthProvider = { provider: "credentials", providerId: email as string }
@@ -26,6 +28,9 @@ const createUser = async (payload: Partial<IUser>) => {
     })
     return user
 }
+
+
+
 
 const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
   const isUserExist = await User.findById(userId);

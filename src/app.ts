@@ -36,12 +36,12 @@
 
 import express, { Request, Response } from "express";
 import { router } from "./app/routes";
-import { globalErrorHandler } from "./app/middlewares/globalErrorHandler";
 import notFound from "./app/middlewares/NotFound";
 import cookieParser from "cookie-parser";
 import passport from "passport";
 import session from "express-session"; // ✅ fixed typo
 import "./app/config/passport";
+import { globalErrorHandler } from "./app/middlewares/globalErrorHandler";
 
 const app = express();
 
