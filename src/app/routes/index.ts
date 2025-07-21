@@ -2,6 +2,7 @@ import { Router } from "express";
 import { UserRoutes } from "../modules/user/user.routes";
 import { AuthRoutes } from "../modules/auth/auth.route";
 import { divisionRoute } from "../modules/division/division.route";
+import { tourRoute } from "../modules/tour/tour.route";
 
 export const router = Router()
 
@@ -17,7 +18,11 @@ const moduleRoutes = [
     {
         path:"/division",
         route: divisionRoute
-    }
+    },
+    {
+        path:"/tour",
+        route: tourRoute
+    },
 ]
 
 moduleRoutes.forEach((route)=>{
