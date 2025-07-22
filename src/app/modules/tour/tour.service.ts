@@ -18,11 +18,13 @@ const getTours = async () =>{
     return find;
 }
 
+// FInd single tour 
 const getSingleTour = async(id: string)=>{
     const tour = await Tour.findById(id);
     return tour;
 }
 
+// update tour
 const TourUpdate = async (id: string, payload: Partial<ITour>)=>{
     // const {title, ...rest} = payload;
     const isTourExist = await Tour.findById(id);
@@ -34,6 +36,11 @@ const TourUpdate = async (id: string, payload: Partial<ITour>)=>{
     return update;
 
 }
+
+const tourDelete = async(id: string)=>{
+    const deleteTour = await Tour.findByIdAndDelete(id)
+    return deleteTour;
+};
 
 // Create tours types
 const tourTypeCreate = async (payload: Partial<ITourType>) => {
@@ -74,6 +81,7 @@ export const TourTypeService = {
     getTours,
     getSingleTour,
     TourUpdate,
+    tourDelete,
     tourTypeCreate,
     getTourType,
     updatedTour,

@@ -41,6 +41,18 @@ const updateTour = async(req:Request, res: Response) =>{
     })
 }
 
+const deleteTour = async(req: Request, res: Response)=>{
+    const id = req.params.id;
+    await TourTypeService.tourDelete(id)
+    sendResponse(res,{
+        success: true,
+            statusCode: 200,
+            message: "Tour  deleted successfully",
+            data: null
+    })
+     
+}
+
 // Find a single tour
 const getSingleTour = async(req: Request, res: Response) => {
     const id = req.params.id;
@@ -108,6 +120,7 @@ export const TourTypeController = {
     getTours,
     getSingleTour,
     updateTour,
+    deleteTour,
     createTourTypes,
     tourTypeFind,
     tourTypeUpdated,
