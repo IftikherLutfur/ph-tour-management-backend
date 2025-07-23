@@ -22,26 +22,37 @@ const createTour = async (payload: Partial<ITour>) => {
 
 
 const getTours = async (query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilders(Tour.find(), query);
     
-    const queryBuilder = new QueryBuilders(Tour.find(), query)
-    const find = await queryBuilder.search(tourSearchFields).filter().modelQuery
+    // Query তৈরি করো কিন্তু এক্সিকিউট করোনা এখানে
+    const builtQuery = queryBuilder
+      .search(tourSearchFields)
+      .filter()
+      .sort()
+      .field()
+      .pagination()
+      .build(); // শুধু query object পেলাম, execute হয়নি এখনো
 
-    // const totalTours = await Tour.countDocuments()
-    // const totalPage = Math.ceil(totalTours / limit)
+    // এবার query execute করো একবারই
+    const data = await builtQuery;
 
-    // const meta = {
-    //     page: page,
-    //     total: totalTours,
-    //     limit: limit,
-    //     totalPage: totalPage
-
-    // }
+    // getMeta() এর জন্য নতুন query তৈরি করো (execute না করা অবস্থায়)
+    const totalTours = await Tour.countDocuments(); // আলাদা query
+    
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const totalPage = Math.ceil(totalTours / limit);
 
     return {
-        data: find,
-        // meta: meta
+        data,
+        meta: {
+            page,
+            limit,
+            total: totalTours,
+            totalPage
+        }
     };
-}
+};
 
 
 

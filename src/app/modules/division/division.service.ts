@@ -25,14 +25,11 @@ const getDivisionData = async () => {
 }
 
 const getSigleDIvision = async (slug: string) => {
-
-
     const division = await Division.findOne({ slug })
     return {
         data: division
     }
 }
-
 
 
 const updateDivision = async (id: string, payload: Partial<IDivision>) => {
