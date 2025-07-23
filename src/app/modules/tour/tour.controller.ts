@@ -18,7 +18,8 @@ const createTour = async(req: Request, res: Response) => {
 // FInd all tours
 
 const getTours = async(req:Request, res: Response)=>{
-      const tours = await TourTypeService.getTours()
+    const query = req.query;
+      const tours = await TourTypeService.getTours(query as Record<string,string>)
       sendResponse(res,{
         success: true,
         statusCode: 200,
@@ -65,6 +66,9 @@ const getSingleTour = async(req: Request, res: Response) => {
     })
 }
 
+
+
+// -------------Tour Types-----------
 // Create a new tour type
 const createTourTypes = async(req: Request, res: Response) =>{
     const payload = req.body;

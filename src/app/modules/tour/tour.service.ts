@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-dynamic-delete */
+import { excludeField, tourSearchFields } from "./tour.constant";
 import { ITour, ITourType } from "./tour.interface";
 import { Tour, TourTypeModel } from "./tour.model";
 
 
 // Create a new tour
-const createTour = async (payload: Partial<ITour>)=>{
-    const {title, ...rest} = payload;
+const createTour = async (payload: Partial<ITour>) => {
+    const { title, ...rest } = payload;
     const create = await Tour.create({
         title,
         ...rest
@@ -13,31 +15,65 @@ const createTour = async (payload: Partial<ITour>)=>{
 }
 
 // Find all tours
-const getTours = async () =>{
-    const find= await Tour.find({})
-    return find;
+const getTours = async (query: Record<string, string>) => {
+
+    const filter = query
+    const searchTerm = query.searchTerm || "";
+    const sort = query.sort || "-createdAt";
+    const fields = query.fields?.split(",").join(" ") || "";
+    const page = Number(query.page) || 1 ;
+    const limit = Number(query.limit) || 10;
+    const skip = (page-1)*limit
+
+
+    for(const field of excludeField){
+        delete filter[field]
+    }
+
+    const searchQuery = {
+        $or: tourSearchFields.map(field => ({
+        [field]: { $regex: searchTerm, $options: "i" }
+    }))}
+
+    const find = await Tour.find(searchQuery).find(filter).sort(sort).select(fields).skip(skip).limit(limit)
+
+    const totalTours = await Tour.countDocuments()
+    const totalPage = Math.ceil(totalTours/limit)
+
+    const meta = {
+     page: page,
+     total: totalTours,
+     limit: limit,
+     totalPage: totalPage
+
+    }
+
+    return{
+  data: find,
+  meta:meta
+    } ;
 }
 
 // FInd single tour 
-const getSingleTour = async(id: string)=>{
+const getSingleTour = async (id: string) => {
     const tour = await Tour.findById(id);
     return tour;
 }
 
 // update tour
-const TourUpdate = async (id: string, payload: Partial<ITour>)=>{
+const TourUpdate = async (id: string, payload: Partial<ITour>) => {
     // const {title, ...rest} = payload;
     const isTourExist = await Tour.findById(id);
-    if(!isTourExist){
+    if (!isTourExist) {
         throw new Error("Tour not found")
     }
 
-    const update =  await Tour.findByIdAndUpdate(id, payload, {new: true})
+    const update = await Tour.findByIdAndUpdate(id, payload, { new: true })
     return update;
 
 }
 
-const tourDelete = async(id: string)=>{
+const tourDelete = async (id: string) => {
     const deleteTour = await Tour.findByIdAndDelete(id)
     return deleteTour;
 };
