@@ -57,6 +57,18 @@ const getAllUsers = catchAsync(async(req: Request, res:Response, next: NextFunct
     
 })
 
+
+const getSingleUser = catchAsync(async(req:Request, res: Response)=>{
+        const userId = req.params.id;
+        const user = await userServices.singleUser(userId)
+        sendResponse(res,{
+            success: true,
+            statusCode:httpStatus.CREATED,
+            message: "Single user retrived",
+            data: user
+        })
+}) 
+
 const updateUser = catchAsync (async(req:Request, res:Response, next:NextFunction)=>{
     const userId = req.params.id;
     // const token = req.headers.authorization;
@@ -78,5 +90,6 @@ const updateUser = catchAsync (async(req:Request, res:Response, next:NextFunctio
 export const UserContrllers = {
     createUser,
     getAllUsers,
-    updateUser
+    updateUser,
+    getSingleUser
 }
