@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { QueryBuilders } from "../../utils/QueryBuilder";
+import { divisionSearchField } from "./division.constant";
 import { IDivision } from "./division.interface"
 import { Division } from "./division.model";
 
@@ -19,20 +22,39 @@ const createDivision = async (payload: Partial<IDivision>) => {
     return create;
 };
 
-const getDivisionData = async () => {
-    const divison = await Division.find({})
-    return divison;
-}
+export const getDivisionData = async (query: Record<string, any>) => {
+
+  // 1️⃣ Initialize query builder with the Division model and incoming query
+  const queryBuilder = new QueryBuilders(Division.find(), query);
+
+  // 2️⃣ Chain the operations as needed
+  const builtQuery = queryBuilder
+    .filter()
+    .search(divisionSearchField)
+    .sort()
+    .field()
+    .pagination()
+    .build(); // ⬅️ This returns the final Mongoose query
+
+  // 3️⃣ Execute the query
+  const divisions = await builtQuery;
+
+  // 4️⃣ Optionally get pagination meta
+  const meta = await queryBuilder.getMeta();
+
+  // 5️⃣ Return both data and meta
+  return {
+    meta,
+    data: divisions,
+  };
+};
 
 const getSigleDIvision = async (slug: string) => {
-
-
     const division = await Division.findOne({ slug })
     return {
         data: division
     }
 }
-
 
 
 const updateDivision = async (id: string, payload: Partial<IDivision>) => {

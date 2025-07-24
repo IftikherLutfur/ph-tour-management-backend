@@ -17,7 +17,8 @@ const createDivision = async (req: Request, res: Response, next: NextFunction) =
 }
 
 const getDivision = async (req: Request, res: Response, next: NextFunction) => {
-      const result = await DivisionServices.getDivisionData()
+    const query = req.query
+      const result = await DivisionServices.getDivisionData(query as Record<string,string>)
       sendResponse(res,{
             success: true,
             statusCode: 201,

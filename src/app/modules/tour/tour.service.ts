@@ -1,7 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-dynamic-delete */
+import { Query } from "mongoose";
 import { excludeField, tourSearchFields } from "./tour.constant";
 import { ITour, ITourType } from "./tour.interface";
 import { Tour, TourTypeModel } from "./tour.model";
+import { QueryBuilders } from "../../utils/QueryBuilder";
 
 
 // Create a new tour
@@ -14,45 +18,83 @@ const createTour = async (payload: Partial<ITour>) => {
     return create;
 }
 
-// Find all tours
+
+
+
 const getTours = async (query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilders(Tour.find(), query);
+    
+    // Query তৈরি করো কিন্তু এক্সিকিউট করোনা এখানে
+    const builtQuery = queryBuilder
+      .search(tourSearchFields)
+      .filter()
+      .sort()
+      .field()
+      .pagination()
+      .build(); // শুধু query object পেলাম, execute হয়নি এখনো
 
-    const filter = query
-    const searchTerm = query.searchTerm || "";
-    const sort = query.sort || "-createdAt";
-    const fields = query.fields?.split(",").join(" ") || "";
-    const page = Number(query.page) || 1 ;
+    // এবার query execute করো একবারই
+    const data = await builtQuery;
+
+    // getMeta() এর জন্য নতুন query তৈরি করো (execute না করা অবস্থায়)
+    const totalTours = await Tour.countDocuments(); // আলাদা query
+    
+    const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 10;
-    const skip = (page-1)*limit
+    const totalPage = Math.ceil(totalTours / limit);
+
+    return {
+        data,
+        meta: {
+            page,
+            limit,
+            total: totalTours,
+            totalPage
+        }
+    };
+};
 
 
-    for(const field of excludeField){
-        delete filter[field]
-    }
 
-    const searchQuery = {
-        $or: tourSearchFields.map(field => ({
-        [field]: { $regex: searchTerm, $options: "i" }
-    }))}
+// Find all tours
+// const getTours = async (query: Record<string, string>) => {
 
-    const find = await Tour.find(searchQuery).find(filter).sort(sort).select(fields).skip(skip).limit(limit)
+//     const filter = query
+//     const searchTerm = query.searchTerm || "";
+//     const sort = query.sort || "-createdAt";
+//     const fields = query.fields?.split(",").join(" ") || "";
+//     const page = Number(query.page) || 1 ;
+//     const limit = Number(query.limit) || 10;
+//     const skip = (page-1)*limit
 
-    const totalTours = await Tour.countDocuments()
-    const totalPage = Math.ceil(totalTours/limit)
 
-    const meta = {
-     page: page,
-     total: totalTours,
-     limit: limit,
-     totalPage: totalPage
+//     for(const field of excludeField){
+//         delete filter[field]
+//     }
 
-    }
+//     const searchQuery = {
+//         $or: tourSearchFields.map(field => ({
+//         [field]: { $regex: searchTerm, $options: "i" }
+//     }))}
 
-    return{
-  data: find,
-  meta:meta
-    } ;
-}
+//     const find = await Tour.find(searchQuery).find(filter).sort(sort).select(fields).skip(skip).limit(limit)
+
+//     const totalTours = await Tour.countDocuments()
+//     const totalPage = Math.ceil(totalTours/limit)
+
+//     const meta = {
+//      page: page,
+//      total: totalTours,
+//      limit: limit,
+//      totalPage: totalPage
+
+//     }
+
+//     return{
+//   data: find,
+//   meta:meta
+//     } ;
+// }
 
 // FInd single tour 
 const getSingleTour = async (id: string) => {
