@@ -2,25 +2,30 @@
 import AppError from "../../errorHelpers/AppError";
 import { PAYMENT_STATUS } from "../payment/payment.interface";
 import { Payment } from "../payment/payment.model";
+import { ISSLCommerz } from "../sslcommerz/sslcommerz.interface";
+import { SSLService } from "../sslcommerz/sslcommerz.service";
 import { Tour } from "../tour/tour.model";
+import { User } from "../user/user.model";
 // import { User } from "../user/user.model";
 import { Booking_Status, IBooking } from "./booking.interface";
 import { Booking } from "./booking.model"
 import httpStatus from "http-status-codes"
 
-const getTransactionId = () => {
+  const getTransactionId = () => {
     return `tran_${Date.now()}_${Math.floor(Math.random() * 1000)}`
 }
+const transactionId = getTransactionId()
+
 const createBooking = async (payload: Partial<IBooking>, userId: string) => {
     const session = await Booking.startSession();
     session.startTransaction()
 
 
     try {
-        // const user = await User.findById(userId)
-        // if(!user?.address){
-        //     throw new AppError(httpStatus.BAD_REQUEST, "Please update your profile( specially phone & address) to book a tour")
-        // }
+        const user = await User.findById(userId)
+        if (!user?.address || !user.phone) {
+            throw new AppError(httpStatus.BAD_REQUEST, "Please update your profile( specially phone & address) to book a tour")
+        }
 
 
         const tour = await Tour.findById(payload.tour).select("costForm")
@@ -43,7 +48,7 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
         const payment = await Payment.create([{
             booking: booking[0]._id,
             status: PAYMENT_STATUS.UNPAID,
-            transactionId: getTransactionId(),
+            transactionId: transactionId,
             amount: amount
         }], { session })
 
@@ -57,9 +62,28 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
                 .populate("tour", "title costForm")
                 .populate("payment")
 
+        const userAddress = (updateBooking?.user as any).address
+        const userEmail = (updateBooking?.user as any).email
+        const userPhoneNumber = (updateBooking?.user as any).phone
+        const userName = (updateBooking?.user as any).name
+
+        const sslPayload: ISSLCommerz = {
+            address: userAddress,
+            email: userEmail,
+            phoneNumber: userPhoneNumber,
+            name: userName,
+            amount: amount,
+            transaction: transactionId
+        }
+
+        const sslPayment = await SSLService.sslPayment(sslPayload)
+
         await session.commitTransaction();
         session.endSession()
-        return updateBooking;
+        return {
+            paymenturl: sslPayment.GatewayPageURL, 
+            booking: updateBooking
+        };
 
     } catch (error: any) {
         await session.abortTransaction()
