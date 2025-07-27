@@ -8,6 +8,7 @@ export interface ITour {
     title: string;
     slug?: string;
     description?: string;
+    phone?: number;
     images?: string[];
     location?: string;
     costForm?: number;

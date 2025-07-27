@@ -9,7 +9,6 @@ import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
 
 // const app = express()
 let server: Server;
-const port = process.env.PORT || 5000;
 
 
 const startServer = async () => {
