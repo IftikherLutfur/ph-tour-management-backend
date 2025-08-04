@@ -1,18 +1,30 @@
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from "express";
 import { Division } from "./division.model";
 import { sendResponse } from "../../utils/sendResponse";
 import { DivisionServices } from "./division.service";
 import { catchAsync } from "../../utils/catchAsync";
+import { IDivision } from "./division.interface";
 
 const createDivision = async (req: Request, res: Response, next: NextFunction) => {
     // const {name, slug, ...rest} = req.body;
-    const division = await DivisionServices.createDivision(req.body)
+    console.log({
+        body: req.body
+    })
+    console.log("File", req.file);
+
+    // const payload: IDivision = {
+    //     ...req.body,
+    //     thumbnail: req.body?.path
+    // }
+
+    // const division = await DivisionServices.createDivision(payload)
     sendResponse(res, {
         success: true,
         statusCode: 201,
         message: "Division created successfully",
-        data: division
+        data: {}
     })
 }
 

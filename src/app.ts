@@ -53,10 +53,9 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session()); // ✅ placed after session middleware
-
 app.use(cookieParser());
 app.use(express.json());
-
+app.use(express.urlencoded({extended:true}))
 app.use("/api/v1", router);
 
 app.get("/", (req: Request, res: Response) => {
