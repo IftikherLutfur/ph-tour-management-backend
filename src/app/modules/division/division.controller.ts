@@ -12,19 +12,20 @@ const createDivision = async (req: Request, res: Response, next: NextFunction) =
     console.log({
         body: req.body
     })
-    console.log("File", req.file);
+    console.log("BODY:", req.body);
+  console.log("FILE:", req.file); // ✅ CHECK FILE
 
-    // const payload: IDivision = {
-    //     ...req.body,
-    //     thumbnail: req.body?.path
-    // }
+    const payload: IDivision = {
+        ...req.body,
+        thumbnail: req.file?.path
+    }
 
-    // const division = await DivisionServices.createDivision(payload)
+    const division = await DivisionServices.createDivision(payload)
     sendResponse(res, {
         success: true,
         statusCode: 201,
         message: "Division created successfully",
-        data: {}
+        data: division
     })
 }
 
@@ -39,7 +40,6 @@ const getDivision = async (req: Request, res: Response, next: NextFunction) => {
 
         })
 }
-
 
 const getSingleDivision = catchAsync(async(req:Request, res:Response)=>{
     const slug = req.params.slug;

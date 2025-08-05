@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { DivisionController } from "./division.controller";
 import { validateRequest } from "../../middlewares/validateRequest";
-import { divisionZodSchem, divisionZodUpdateSchem } from "./division.validation";
+import {  divisionZodUpdateSchem } from "./division.validation";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "../user/user.interface";
 import { multerUpload } from "../../config/multer.config";
@@ -11,8 +11,7 @@ const route = Router()
 route.post(
   "/create",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  multerUpload.single("image"), // ✅ typo fixed
-//   validateRequest(divisionZodSchem),
+  multerUpload.single("image"), // ✅ IMPORTANT: field name = "image"
   DivisionController.createDivision
 );
 
