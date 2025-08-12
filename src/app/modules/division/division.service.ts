@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { deleteImage } from "../../config/cloudinary.config";
 import { QueryBuilders } from "../../utils/QueryBuilder";
 import { divisionSearchField } from "./division.constant";
 import { IDivision } from "./division.interface"
@@ -67,8 +68,8 @@ const updateDivision = async (id: string, payload: Partial<IDivision>) => {
     // Check for duplicate division name (excluding current one)
     if (payload.name) {
         const duplicateDivision = await Division.findOne({
-            name: payload.name,
             _id: { $ne: id },
+            name: payload.name
         });
 
         if (duplicateDivision) {
@@ -91,6 +92,10 @@ const updateDivision = async (id: string, payload: Partial<IDivision>) => {
     const updatedDivision = await Division.findByIdAndUpdate(id, payload, {
         new: true,
     });
+
+    if(payload.thumbnail && isDivisionExist.thumbnail){
+        await deleteImage(isDivisionExist.thumbnail)
+    }
 
     return updatedDivision;
 };

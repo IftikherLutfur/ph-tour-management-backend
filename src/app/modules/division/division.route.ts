@@ -17,7 +17,9 @@ route.post(
 
 route.get("/", DivisionController.getDivision)
 route.get("/:slug", DivisionController.getSingleDivision)
-route.patch("/:id", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(divisionZodUpdateSchem), DivisionController.updateDivision)
+route.patch("/:id", 
+  multerUpload.single('image'),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(divisionZodUpdateSchem), DivisionController.updateDivision)
 
 route.delete("/:id", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), DivisionController.deleteDivision)
 

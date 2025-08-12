@@ -6,6 +6,7 @@ import { excludeField, tourSearchFields } from "./tour.constant";
 import { ITour, ITourType } from "./tour.interface";
 import { Tour, TourTypeModel } from "./tour.model";
 import { QueryBuilders } from "../../utils/QueryBuilder";
+import { deleteImage } from "../../config/cloudinary.config";
 
 
 // Create a new tour
@@ -23,22 +24,20 @@ const createTour = async (payload: Partial<ITour>) => {
 
 const getTours = async (query: Record<string, string>) => {
     const queryBuilder = new QueryBuilders(Tour.find(), query);
-    
-    // Query তৈরি করো কিন্তু এক্সিকিউট করোনা এখানে
     const builtQuery = queryBuilder
-      .search(tourSearchFields)
-      .filter()
-      .sort()
-      .field()
-      .pagination()
-      .build(); // শুধু query object পেলাম, execute হয়নি এখনো
+        .search(tourSearchFields)
+        .filter()
+        .sort()
+        .field()
+        .pagination()
+        .build(); // শুধু query object পেলাম, execute হয়নি এখনো
 
     // এবার query execute করো একবারই
     const data = await builtQuery;
 
     // getMeta() এর জন্য নতুন query তৈরি করো (execute না করা অবস্থায়)
     const totalTours = await Tour.countDocuments(); // আলাদা query
-    
+
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 10;
     const totalPage = Math.ceil(totalTours / limit);
@@ -105,12 +104,29 @@ const getSingleTour = async (id: string) => {
 // update tour
 const TourUpdate = async (id: string, payload: Partial<ITour>) => {
     // const {title, ...rest} = payload;
+
     const isTourExist = await Tour.findById(id);
     if (!isTourExist) {
         throw new Error("Tour not found")
     }
 
+    if (payload.images && payload.images.length > 0 && isTourExist.images && isTourExist.images.length > 0) {
+        payload.images = [...payload.images, ...isTourExist.images]
+    }
+
+    if (payload.deletedImage && payload.deletedImage.length > 0 && isTourExist.images && isTourExist.images.length > 0) {
+        const restDBImages = isTourExist.images.filter(imageUrl => !payload.deletedImage?.includes(imageUrl));
+
+        const updatedPayloadImage = (payload.images || [])
+            .filter(imageUrl => !payload.deletedImage?.includes(imageUrl)).filter(imageUrl => !restDBImages.includes(imageUrl))
+
+        payload.images = [...restDBImages, ...updatedPayloadImage]
+    }
+
     const update = await Tour.findByIdAndUpdate(id, payload, { new: true })
+    if (payload.deletedImage && payload.deletedImage.length > 0 && isTourExist.images && isTourExist.images.length > 0) {
+        await Promise.all(payload.deletedImage.map(url => deleteImage(url)))
+    }
     return update;
 
 }

@@ -2,15 +2,15 @@ import { model, Schema } from "mongoose";
 import { ITour, ITourType } from "./tour.interface";
 
 const tourTypeSchema = new Schema<ITourType>({
-    name: {type: String, required: true, unique: true}
+    name: { type: String, required: true, unique: true }
 },
-{timestamps: true}
+    { timestamps: true }
 )
 
-export const TourTypeModel = model<ITourType>("TourTypeModel",tourTypeSchema )
+export const TourTypeModel = model<ITourType>("TourTypeModel", tourTypeSchema)
 
 const tourSchema = new Schema<ITour>({
-    title: { type: String, required: true },
+    title: { type: String, required: true, unique: true },
     slug: { type: String, required: false, unique: true },
     description: { type: String },
     images: { type: [String], default: [] },
@@ -32,11 +32,14 @@ const tourSchema = new Schema<ITour>({
     tourType: {
         type: Schema.Types.ObjectId,
         ref: TourTypeModel,
-        required:true
+        required: true
 
     }
-
-})
+},
+    {
+        timestamps: true,
+        versionKey: false
+    })
 
 
 tourSchema.pre("save", async function (next) {
@@ -65,8 +68,9 @@ tourSchema.pre("findOneAndUpdate", async function (next) {
         while (await Tour.exists({ slug })) {
             slug = `${baseSlug}-tour-${counter++}`;
         }
-        tour.slug = slug}
-        
+        tour.slug = slug
+    }
+
     this.setUpdate(tour)
     next()
 })

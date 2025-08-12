@@ -16,5 +16,6 @@ export const tourValidation = z.object({
   maxGuest: z.number().optional(),
   minAge: z.number().optional(),
   division: z.string().min(1, "Division ID is required"), // ObjectId as string
-  tourType: z.string().min(1, "Tour type ID is required") // ObjectId as string
+  tourType: z.string().min(1, "Tour type ID is required"), // ObjectId as string
+  deletedImage: z.array(z.string()).optional()
 })
