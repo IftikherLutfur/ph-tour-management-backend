@@ -4,13 +4,18 @@ import { validateRequest } from "../../middlewares/validateRequest";
 import { tourValidation } from "./tour.validation";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "../user/user.interface";
+import { multerUpload } from "../../config/multer.config";
 
 const router = Router()
 
-router.post("/create",checkAuth(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(tourValidation), TourTypeController.createTour)
+router.post("/create",checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+multerUpload.array("files"),
+validateRequest(tourValidation), TourTypeController.createTour)
 router.get("/", TourTypeController.getTours)
-router.get("/:id", TourTypeController.getSingleTour)
-router.patch("/:id", TourTypeController.updateTour)
+router.get("/:id",
+   
+    TourTypeController.getSingleTour)
+router.patch("/:id", multerUpload.array("files"), TourTypeController.updateTour)
 router.delete("/:id", TourTypeController.deleteTour)
 
 // ---------------------Tour Type--------------------

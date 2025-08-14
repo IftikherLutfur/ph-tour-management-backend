@@ -1,55 +1,12 @@
-// /* eslint-disable @typescript-eslint/no-unused-vars */
-// /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { NextFunction, Request, Response } from "express"
-// import { envVars } from "../config/env"
-// import AppError from "../errorHelpers/AppError"
-
-
-
-// export const globalErrorHandler =
-//     (err: any, req: Request, res: Response, next: NextFunction) => {
-
-
-//         let statusCode = 500
-//         let message = `Something went Wrong ${err.message}`
-
-//         console.log(err);
-
-//         if (err.statusCode && err.message) {
-//             statusCode = err.statusCode;
-//             message = err.message;
-//         }
-
-//         else if (err.name === "ZodError") {
-//             statusCode = 400;
-//             message = "Zod Error";
-//             console.log(err.issues)
-//         }
-
-//         if (err instanceof AppError) {
-//             statusCode = err.statusCode
-//             message = err.message
-//         } else if (err instanceof Error) {
-//             statusCode = 500;
-//             message = err.message
-//         }
-//         res.status(statusCode).json({
-//             success: false,
-//             message,
-//             err,
-//             // stack: err.stack,
-//             stack: envVars.NODE_ENV === "developement" ? err.stack : null
-//         })
-//     }
-
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from "express";
 import { envVars } from "../config/env";
 import AppError from "../errorHelpers/AppError";
 import { ZodError } from "zod";
+import { deleteImage } from "../config/cloudinary.config";
 
-export const globalErrorHandler = (
+export const globalErrorHandler = async(
     err: any,
     req: Request,
     res: Response,
@@ -65,10 +22,13 @@ export const globalErrorHandler = (
         const value = err.keyValue[field];
         return { field, value };
     }
-
-
-
-    console.error("Global Error:", err);
+    if(req.file){
+        await deleteImage(req.file.path)
+    }
+    if (Array.isArray(req.files) && req.files.length > 0) {
+        const imageUrls = (req.files as Express.Multer.File[]).map(file => file.path);
+        await Promise.all(imageUrls.map(url => deleteImage(url)));
+    }
 
     // ✅ Handle Zod validation errors
     if (err instanceof ZodError) {

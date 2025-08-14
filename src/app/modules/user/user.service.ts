@@ -69,8 +69,14 @@ const getUser = async () => {
     }
 }
 
+const getMe = async(userId: string) =>{
+  const findOne = await User.findById(userId).select("-password");
+  return findOne
+
+}
+
 const singleUser = async(userId:string)=>{
-  const getUser = await User.findById(userId)
+  const getUser = await User.findById(userId).select("-password")
   return getUser
 }
 
@@ -78,5 +84,6 @@ export const userServices = {
     createUser,
     getUser,
     singleUser,
-    updateUser
+    updateUser,
+    getMe
 }

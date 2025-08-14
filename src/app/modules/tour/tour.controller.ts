@@ -1,11 +1,15 @@
 import { Request, Response } from "express";
 import { sendResponse } from "../../utils/sendResponse";
 import { TourTypeService } from "./tour.service";
+import { ITour } from "./tour.interface";
 
 
 // Create a new tour
 const createTour = async(req: Request, res: Response) => {
-    const payload = req.body;
+    const payload : ITour ={
+        ...req.body,
+        images: (req.files as Express.Multer.File[]).map(file=>file.path)
+    }
     const tour = await TourTypeService.createTour(payload)
     sendResponse(res, {
         success: true,
@@ -32,7 +36,10 @@ const getTours = async(req:Request, res: Response)=>{
 
 const updateTour = async(req:Request, res: Response) =>{
     const id = req.params.id;
-    const payload = req.body;
+    const payload : ITour ={
+        ...req.body,
+        images: req.files ? (req.files as Express.Multer.File[]).map(file => file.path) : []
+    }
     const tourUpdate = await TourTypeService.TourUpdate(id, payload);
     sendResponse(res,{
         success: true,

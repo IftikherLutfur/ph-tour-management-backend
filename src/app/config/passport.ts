@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import passport from "passport";
 import { Strategy as GoogleStrategy, Profile, VerifyCallback } from "passport-google-oauth20";
-import { Role } from "../modules/user/user.interface";
+import { IsActive, Role } from "../modules/user/user.interface";
 import { User } from "../modules/user/user.model";
 import { envVars } from "./env";
 import { Strategy as LocalStrategy } from "passport-local";
 import bcryptjs from "bcryptjs";
+import httpStatus from "http-status-codes"
+import AppError from "../errorHelpers/AppError";
 
 // Local Strategy (Email & Password)
 passport.use(
@@ -18,16 +20,16 @@ passport.use(
       try {
         const user = await User.findOne({ email }).select("+password +auths"); // Include password if hidden by default
 
-        
+
         const isGoogleAuthenticated = user?.auth?.some(authObj => authObj.provider === "google");
 
         console.log(isGoogleAuthenticated, "passport.js")
-        
+
         if (isGoogleAuthenticated && user?.password) {
-            return done(null, false, {
-                message:
-                "You have authenticated with Google. To log in with credentials, please set a password first after logging in with Google.",
-            });
+          return done(null, false, {
+            message:
+              "You have authenticated with Google. To log in with credentials, please set a password first after logging in with Google.",
+          });
         }
         if (!user) {
           return done(null, false, { message: "User does not exist" });
@@ -69,10 +71,22 @@ passport.use(
           return done(null, false, { message: "No email found" });
         }
 
-        let user = await User.findOne({ email });
+        let isUserExist = await User.findOne({ email });
+        if (!isUserExist) {
+          return done(null, false, { message: "User is not exist" });
+        }
+        if (isUserExist && !isUserExist.isVarified) {
+          return done(null, false, { message: "User is not varified" });
+        }
+        if (isUserExist && (isUserExist.isActive === IsActive.BLOCKED || isUserExist.isActive === IsActive.INACTIVE)) {
+          return done(null, false, { message: `User is ${IsActive}` });
+        }
+        if (isUserExist.isDeleted) {
+          throw new AppError(httpStatus.BAD_REQUEST, `User id deleted`)
+        }
 
-        if (!user) {
-          user = await User.create({
+        if (!isUserExist) {
+          isUserExist = await User.create({
             email,
             name: profile.displayName,
             picture: profile.photos?.[0].value,
@@ -87,7 +101,7 @@ passport.use(
           });
         }
 
-        return done(null, user);
+        return done(null, isUserExist);
       } catch (error) {
         console.log("Google Strategy Error", error);
         return done(error);

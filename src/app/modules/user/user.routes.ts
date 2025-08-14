@@ -10,7 +10,8 @@ const route = Router();
 route.post("/register", 
     validateRequest(createUserZodSchema), 
     UserContrllers.createUser)
-route.get("/", checkAuth("ADMIN", "SUPER_ADMIN"), UserContrllers.getAllUsers)
+    route.get("/", checkAuth("ADMIN", "SUPER_ADMIN"), UserContrllers.getAllUsers)
+    route.get("/me", checkAuth(...Object.values(Role)), UserContrllers.getMe)
 route.get("/:id", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), UserContrllers.getSingleUser)
 route.patch("/:id",validateRequest(updateeUserZodSchema), checkAuth(...Object.values(Role)), UserContrllers.updateUser)
 
