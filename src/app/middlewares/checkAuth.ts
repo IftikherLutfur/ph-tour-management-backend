@@ -18,6 +18,10 @@ export const checkAuth = (...authRole: string[]) => {
 
             const isUserExist = await User.findOne({ email: verifiedToken.email })
 
+            if(isUserExist?.isVarified === false){
+                throw new AppError(httpStatus.BAD_REQUEST, "This user is not varified")
+            }
+
             if (!isUserExist) {
                 throw new AppError(httpStatus.BAD_REQUEST, "User not exist")
             }

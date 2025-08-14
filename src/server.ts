@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import app from "./app";
 import { envVars } from "./app/config/env";
 import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
+import { connectRedis } from "./app/config/redis.config";
 
 // const app = express()
 let server: Server;
@@ -16,7 +17,7 @@ const startServer = async () => {
     try {
         await mongoose.connect(envVars.DB_URL)
         console.log("MongoDB Connect")
-        
+
         server = app.listen(envVars.PORT, () => {
             console.log(`App listening on ${envVars.PORT} `)
         })
@@ -25,9 +26,10 @@ const startServer = async () => {
     }
 }
 
-(async ()=>{
-startServer()
-seedSuperAdmin()
+(async () => {
+    await connectRedis()
+    await startServer()
+    await seedSuperAdmin()
 })()
 
 // process.on("SIGINT", ()=>{
